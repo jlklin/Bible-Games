@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖經人物配對遊戲(高級版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            border-color: #00b894;
+        }
+
+        .difficulty-selector {
+            text-align: center;
+            margin-bottom: 25px;
+            color: white;
+        }
+
+        .difficulty-selector h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            min-width: 120px;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            border-color: #fd79a8;
+        }
+
+        .difficulty-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            pointer-events: none;
+        }
+
+        .difficulty-name {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 3px;
+            pointer-events: none;
+        }
+
+        .difficulty-desc {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            text-align: center;
+            line-height: 1.2;
+            pointer-events: none;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 320px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .card.flipped {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+        }
+
+        .card.matched {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            cursor: default;
+        }
+
+        .card-back {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .card-front {
+            display: none;
+            text-align: center;
+            padding: 4px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d3436;
+            line-height: 1.1;
+        }
+
+        .card.flipped .card-back,
+        .card.matched .card-back {
+            display: none;
+        }
+
+        .card.flipped .card-front,
+        .card.matched .card-front {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .victory-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .victory-message h2 {
+            color: #00b894;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .victory-message p {
+            color: #2d3436;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+                max-width: 280px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .mode-selector {
+                flex-direction: row;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .mode-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                min-width: 140px;
+            }
+
+            .difficulty-buttons {
+                flex-direction: row;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .difficulty-btn {
+                min-width: 90px;
+                padding: 10px 8px;
+            }
+
+            .difficulty-name {
+                font-size: 0.85rem;
+            }
+
+            .difficulty-desc {
+                font-size: 0.7rem;
+            }
+
+            .card-front {
+                font-size: 1.0rem;
+                padding: 2px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-board {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 4px;
+                max-width: 260px;
+            }
+            
+            .card-front {
+                font-size: 0.9rem;
+                padding: 2px;
+                line-height: 1.0;
+            }
+
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .mode-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                min-width: 120px;
+            }
+
+            .difficulty-btn {
+                min-width: 80px;
+                padding: 8px 6px;
+            }
+
+            .difficulty-icon {
+                font-size: 1.2rem;
+            }
+
+            .difficulty-name {
+                font-size: 0.75rem;
+            }
+
+            .difficulty-desc {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🙏 聖經人物配對遊戲(高級版)</h1>
+        <p>選擇遊戲模式並找出正確的配對</p>
+    </div>
+
+    <div class="mode-selector">
+        <button class="mode-btn active" onclick="selectMode('character', this)">👥 人物與人物配對</button>
+        <button class="mode-btn" onclick="selectMode('event', this)">📜 人物與事件配對</button>
+    </div>
+
+    <div class="difficulty-selector">
+        <h3>選擇難度等級：</h3>
+        <div class="difficulty-buttons">
+            <button class="difficulty-btn active" onclick="selectDifficulty('easy', this)">
+                <span class="difficulty-icon">🌟</span>
+                <span class="difficulty-name">初學者</span>
+                <span class="difficulty-desc">熟悉的人物和事件</span>
+            </button>
+            <button class="difficulty-btn" onclick="selectDifficulty('medium', this)">
+                <span class="difficulty-icon">⭐</span>
+                <span class="difficulty-name">進階者</span>
+                <span class="difficulty-desc">需要一定聖經知識</span>
+            </button>
+            <button class="difficulty-btn" onclick="selectDifficulty('hard', this)">
+                <span class="difficulty-icon">🏆</span>
+                <span class="difficulty-name">專家級</span>
+                <span class="difficulty-desc">深度聖經知識挑戰</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="game-info">
+        <div>⏱️ 時間: <span id="timer">00:00</span></div>
+        <div>🎯 步數: <span id="moves">0</span></div>
+        <div>✨ 配對: <span id="matches">0/8</span></div>
+    </div>
+
+    <div class="game-board" id="gameBoard"></div>
+
+    <div class="controls">
+        <button class="btn btn-restart" onclick="restartGame()">🔄 重新開始</button>
+    </div>
+
+    <div class="victory-message" id="victoryMessage">
+        <h2>🎉 恭喜完成！</h2>
+        <p>你成功配對了所有項目！</p>
+        <p>用時: <span id="finalTime"></span></p>
+        <p>步數: <span id="finalMoves"></span></p>
+        <button class="btn btn-restart" onclick="restartGame()">再玩一次</button>
+    </div>
+
+    <script>
+        // 初學者級別 - 人物與人物配對 (最熟悉的80對)
+        const easyCharacterPairs = [
+            { id: 1, text: "亞當", pair: "夏娃" },
+            { id: 2, text: "夏娃", pair: "亞當" },
+            { id: 3, text: "摩西", pair: "亞倫" },
+            { id: 4, text: "亞倫", pair: "摩西" },
+            { id: 5, text: "大衛", pair: "約拿單" },
+            { id: 6, text: "約拿單", pair: "大衛" },
+            { id: 7, text: "耶穌", pair: "施洗約翰" },
+            { id: 8, text: "施洗約翰", pair: "耶穌" },
+            { id: 9, text: "約瑟", pair: "馬利亞" },
+            { id: 10, text: "馬利亞", pair: "約瑟" },
+            { id: 11, text: "彼得", pair: "約翰" },
+            { id: 12, text: "約翰", pair: "彼得" },
+            { id: 13, text: "該隱", pair: "亞伯" },
+            { id: 14, text: "亞伯", pair: "該隱" },
+            { id: 15, text: "雅各", pair: "以掃" },
+            { id: 16, text: "以掃", pair: "雅各" },
+            { id: 17, text: "路得", pair: "拿俄米" },
+            { id: 18, text: "拿俄米", pair: "路得" },
+            { id: 19, text: "以撒", pair: "利百加" },
+            { id: 20, text: "利百加", pair: "以撒" },
+            { id: 21, text: "亞伯拉罕", pair: "撒拉" },
+            { id: 22, text: "撒拉", pair: "亞伯拉罕" },
+            { id: 23, text: "挪亞", pair: "閃" },
+            { id: 24, text: "閃", pair: "挪亞" },
+            { id: 25, text: "保羅", pair: "巴拿巴" },
+            { id: 26, text: "巴拿巴", pair: "保羅" },
+            { id: 27, text: "以利亞", pair: "以利沙" },
+            { id: 28, text: "以利沙", pair: "以利亞" },
+            { id: 29, text: "哈拿", pair: "撒母耳" },
+            { id: 30, text: "撒母耳", pair: "哈拿" },
+            { id: 31, text: "約書亞", pair: "迦勒" },
+            { id: 32, text: "迦勒", pair: "約書亞" },
+            { id: 33, text: "馬大", pair: "馬利亞" },
+            { id: 34, text: "馬利亞", pair: "馬大" },
+            { id: 35, text: "西門", pair: "安得烈" },
+            { id: 36, text: "安得烈", pair: "西門" },
+            { id: 37, text: "以斯帖", pair: "末底改" },
+            { id: 38, text: "末底改", pair: "以斯帖" },
+            { id: 39, text: "所羅門", pair: "示巴女王" },
+            { id: 40, text: "示巴女王", pair: "所羅門" },
+            { id: 41, text: "基甸", pair: "巴拉" },
+            { id: 42, text: "巴拉", pair: "基甸" },
+            { id: 43, text: "參孫", pair: "大利拉" },
+            { id: 44, text: "大利拉", pair: "參孫" },
+            { id: 45, text: "提摩太", pair: "保羅" },
+            { id: 46, text: "保羅", pair: "提摩太" },
+            { id: 47, text: "約伯", pair: "以利法" },
+            { id: 48, text: "以利法", pair: "約伯" },
+            { id: 49, text: "以利加拿", pair: "哈拿" },
+            { id: 50, text: "哈拿", pair: "以利加拿" },
+            { id: 51, text: "波阿斯", pair: "路得" },
+            { id: 52, text: "路得", pair: "波阿斯" },
+            { id: 53, text: "掃羅", pair: "約拿單" },
+            { id: 54, text: "約拿單", pair: "掃羅" },
+            { id: 55, text: "亞哈", pair: "耶洗別" },
+            { id: 56, text: "耶洗別", pair: "亞哈" },
+            { id: 57, text: "希西家", pair: "以賽亞" },
+            { id: 58, text: "以賽亞", pair: "希西家" },
+            { id: 59, text: "約西亞", pair: "耶利米" },
+            { id: 60, text: "耶利米", pair: "約西亞" },
+            { id: 61, text: "尼布甲尼撒", pair: "但以理" },
+            { id: 62, text: "但以理", pair: "尼布甲尼撒" },
+            { id: 63, text: "撒迦利亞", pair: "伊利莎白" },
+            { id: 64, text: "伊利莎白", pair: "撒迦利亞" },
+            { id: 65, text: "古列", pair: "以斯拉" },
+            { id: 66, text: "以斯拉", pair: "古列" },
+            { id: 67, text: "亞達薛西", pair: "尼希米" },
+            { id: 68, text: "尼希米", pair: "亞達薛西" },
+            { id: 69, text: "西面", pair: "亞拿" },
+            { id: 70, text: "亞拿", pair: "西面" },
+            { id: 71, text: "腓力", pair: "拿但業" },
+            { id: 72, text: "拿但業", pair: "腓力" },
+            { id: 73, text: "馬太", pair: "多馬" },
+            { id: 74, text: "多馬", pair: "馬太" },
+            { id: 75, text: "司提反", pair: "腓利" },
+            { id: 76, text: "腓利", pair: "司提反" },
+            { id: 77, text: "亞拿尼亞", pair: "撒非喇" },
+            { id: 78, text: "撒非喇", pair: "亞拿尼亞" },
+            { id: 79, text: "哥尼流", pair: "彼得" },
+            { id: 80, text: "彼得", pair: "哥尼流" },
+            { id: 81, text: "西拉", pair: "保羅" },
+            { id: 82, text: "保羅", pair: "西拉" },
+            { id: 83, text: "亞居拉", pair: "百基拉" },
+            { id: 84, text: "百基拉", pair: "亞居拉" },
+            { id: 85, text: "路加", pair: "保羅" },
+            { id: 86, text: "保羅", pair: "路加" },
+            { id: 87, text: "推基古", pair: "保羅" },
+            { id: 88, text: "保羅", pair: "推基古" },
+            { id: 89, text: "以巴弗", pair: "保羅" },
+            { id: 90, text: "保羅", pair: "以巴弗" },
+            { id: 91, text: "腓利門", pair: "阿尼西母" },
+            { id: 92, text: "阿尼西母", pair: "腓利門" },
+            { id: 93, text: "該猶", pair: "約翰" },
+            { id: 94, text: "約翰", pair: "該猶" },
+            { id: 95, text: "米迦勒", pair: "加百列" },
+            { id: 96, text: "加百列", pair: "米迦勒" },
+            { id: 97, text: "拉結", pair: "利亞" },
+            { id: 98, text: "利亞", pair: "拉結" },
+            { id: 99, text: "米利暗", pair: "摩西" },
+            { id: 100, text: "摩西", pair: "米利暗" },
+            { id: 101, text: "底波拉", pair: "巴拉" },
+            { id: 102, text: "巴拉", pair: "底波拉" },
+            { id: 103, text: "哈該", pair: "撒迦利亞" },
+            { id: 104, text: "撒迦利亞", pair: "哈該" },
+            { id: 105, text: "瑪拉基", pair: "以斯拉" },
+            { id: 106, text: "以斯拉", pair: "瑪拉基" },
+            { id: 107, text: "希律", pair: "希羅底" },
+            { id: 108, text: "希羅底", pair: "希律" },
+            { id: 109, text: "彼拉多", pair: "耶穌" },
+            { id: 110, text: "耶穌", pair: "彼拉多" },
+            { id: 111, text: "巴拿巴", pair: "馬可" },
+            { id: 112, text: "馬可", pair: "巴拿巴" },
+            { id: 113, text: "亞波羅", pair: "保羅" },
+            { id: 114, text: "保羅", pair: "亞波羅" },
+            { id: 115, text: "以弗所", pair: "提摩太" },
+            { id: 116, text: "提摩太", pair: "以弗所" },
+            { id: 117, text: "提多", pair: "保羅" },
+            { id: 118, text: "保羅", pair: "提多" },
+            { id: 119, text: "拿八", pair: "亞比該" },
+            { id: 120, text: "亞比該", pair: "拿八" },
+            { id: 121, text: "亞伯拉罕", pair: "羅得" },
+            { id: 122, text: "羅得", pair: "亞伯拉罕" },
+            { id: 123, text: "雅各", pair: "約翰" },
+            { id: 124, text: "約翰", pair: "雅各" },
+            { id: 125, text: "約書亞", pair: "摩西" },
+            { id: 126, text: "摩西", pair: "約書亞" },
+            { id: 127, text: "約翰", pair: "雅各" },
+            { id: 128, text: "雅各", pair: "約翰" },
+            { id: 129, text: "拉班", pair: "雅各" },
+            { id: 130, text: "雅各", pair: "拉班" },
+            { id: 131, text: "約瑟", pair: "便雅憫" },
+            { id: 132, text: "便雅憫", pair: "約瑟" },
+            { id: 133, text: "法老", pair: "約瑟" },
+            { id: 134, text: "約瑟", pair: "法老" },
+            { id: 135, text: "葉忒羅", pair: "摩西" },
+            { id: 136, text: "摩西", pair: "葉忒羅" },
+            { id: 137, text: "西坡拉", pair: "摩西" },
+            { id: 138, text: "摩西", pair: "西坡拉" },
+            { id: 139, text: "戶珥", pair: "亞倫" },
+            { id: 140, text: "亞倫", pair: "戶珥" },
+            { id: 141, text: "約書亞", pair: "以利亞撒" },
+            { id: 142, text: "以利亞撒", pair: "約書亞" },
+            { id: 143, text: "俄陀聶", pair: "迦勒" },
+            { id: 144, text: "迦勒", pair: "俄陀聶" },
+            { id: 145, text: "以笏", pair: "伊磯倫" },
+            { id: 146, text: "伊磯倫", pair: "以笏" },
+            { id: 147, text: "珊迦", pair: "非利士人" },
+            { id: 148, text: "非利士人", pair: "珊迦" },
+            { id: 149, text: "雅億", pair: "西西拉" },
+            { id: 150, text: "西西拉", pair: "雅億" },
+            { id: 151, text: "陀拉", pair: "以薩迦" },
+            { id: 152, text: "以薩迦", pair: "陀拉" },
+            { id: 153, text: "睚珥", pair: "基列" },
+            { id: 154, text: "基列", pair: "睚珥" },
+            { id: 155, text: "耶弗他", pair: "基列" },
+            { id: 156, text: "基列", pair: "耶弗他" },
+            { id: 157, text: "以比讚", pair: "伯利恆" },
+            { id: 158, text: "伯利恆", pair: "以比讚" },
+            { id: 159, text: "以倫", pair: "西布倫" },
+            { id: 160, text: "西布倫", pair: "以倫" }
+        ];
+
+        // 進階級別 - 人物與人物配對 (中等難度170對)
+        const mediumCharacterPairs = [
+            ...easyCharacterPairs,
+            { id: 161, text: "押頓", pair: "比拉頓" },
+            { id: 162, text: "比拉頓", pair: "押頓" },
+            { id: 163, text: "瑪挪亞", pair: "參孫" },
+            { id: 164, text: "參孫", pair: "瑪挪亞" },
+            { id: 165, text: "以利", pair: "撒母耳" },
+            { id: 166, text: "撒母耳", pair: "以利" },
+            { id: 167, text: "何弗尼", pair: "非尼哈" },
+            { id: 168, text: "非尼哈", pair: "何弗尼" },
+            { id: 169, text: "約珥", pair: "亞比亞" },
+            { id: 170, text: "亞比亞", pair: "約珥" },
+            { id: 171, text: "基士", pair: "掃羅" },
+            { id: 172, text: "掃羅", pair: "基士" },
+            { id: 173, text: "亞比拿達", pair: "烏撒" },
+            { id: 174, text: "烏撒", pair: "亞比拿達" },
+            { id: 175, text: "拿單", pair: "大衛" },
+            { id: 176, text: "大衛", pair: "拿單" },
+            { id: 177, text: "迦得", pair: "大衛" },
+            { id: 178, text: "大衛", pair: "迦得" },
+            { id: 179, text: "亞希多弗", pair: "押沙龍" },
+            { id: 180, text: "押沙龍", pair: "亞希多弗" },
+            { id: 181, text: "戶篩", pair: "大衛" },
+            { id: 182, text: "大衛", pair: "戶篩" },
+            { id: 183, text: "約押", pair: "亞比篩" },
+            { id: 184, text: "亞比篩", pair: "約押" },
+            { id: 185, text: "亞瑪撒", pair: "押沙龍" },
+            { id: 186, text: "押沙龍", pair: "亞瑪撒" },
+            { id: 187, text: "示每", pair: "大衛" },
+            { id: 188, text: "大衛", pair: "示每" },
+            { id: 189, text: "米非波設", pair: "約拿單" },
+            { id: 190, text: "約拿單", pair: "米非波設" },
+            { id: 191, text: "洗巴", pair: "米非波設" },
+            { id: 192, text: "米非波設", pair: "洗巴" },
+            { id: 193, text: "亞多尼雅", pair: "所羅門" },
+            { id: 194, text: "所羅門", pair: "亞多尼雅" },
+            { id: 195, text: "比拿雅", pair: "所羅門" },
+            { id: 196, text: "所羅門", pair: "比拿雅" },
+            { id: 197, text: "撒督", pair: "亞比亞他" },
+            { id: 198, text: "亞比亞他", pair: "撒督" },
+            { id: 199, text: "希蘭", pair: "所羅門" },
+            { id: 200, text: "所羅門", pair: "希蘭" },
+            { id: 201, text: "戶蘭", pair: "所羅門" },
+            { id: 202, text: "所羅門", pair: "戶蘭" },
+            { id: 203, text: "羅波安", pair: "耶羅波安" },
+            { id: 204, text: "耶羅波安", pair: "羅波安" },
+            { id: 205, text: "示瑪雅", pair: "羅波安" },
+            { id: 206, text: "羅波安", pair: "示瑪雅" },
+            { id: 207, text: "亞希雅", pair: "耶羅波安" },
+            { id: 208, text: "耶羅波安", pair: "亞希雅" },
+            { id: 209, text: "拿答", pair: "巴沙" },
+            { id: 210, text: "巴沙", pair: "拿答" },
+            { id: 211, text: "以拉", pair: "心利" },
+            { id: 212, text: "心利", pair: "以拉" },
+            { id: 213, text: "暗利", pair: "亞哈" },
+            { id: 214, text: "亞哈", pair: "暗利" },
+            { id: 215, text: "俄巴底", pair: "以利亞" },
+            { id: 216, text: "以利亞", pair: "俄巴底" },
+            { id: 217, text: "米該雅", pair: "亞哈" },
+            { id: 218, text: "亞哈", pair: "米該雅" },
+            { id: 219, text: "亞哈謝", pair: "約蘭" },
+            { id: 220, text: "約蘭", pair: "亞哈謝" },
+            { id: 221, text: "耶戶", pair: "約蘭" },
+            { id: 222, text: "約蘭", pair: "耶戶" },
+            { id: 223, text: "約哈斯", pair: "約阿施" },
+            { id: 224, text: "約阿施", pair: "約哈斯" },
+            { id: 225, text: "耶羅波安二世", pair: "撒迦利雅" },
+            { id: 226, text: "撒迦利雅", pair: "耶羅波安二世" },
+            { id: 227, text: "沙龍", pair: "米拿現" },
+            { id: 228, text: "米拿現", pair: "沙龍" },
+            { id: 229, text: "比加轄", pair: "比加" },
+            { id: 230, text: "比加", pair: "比加轄" },
+            { id: 231, text: "何細亞", pair: "撒瑪利亞" },
+            { id: 232, text: "撒瑪利亞", pair: "何細亞" },
+            { id: 233, text: "瑪拿西", pair: "亞們" },
+            { id: 234, text: "亞們", pair: "瑪拿西" },
+            { id: 235, text: "約雅敬", pair: "約雅斤" },
+            { id: 236, text: "約雅斤", pair: "約雅敬" },
+            { id: 237, text: "西底家", pair: "耶利米" },
+            { id: 238, text: "耶利米", pair: "西底家" },
+            { id: 239, text: "基大利", pair: "以實瑪利" },
+            { id: 240, text: "以實瑪利", pair: "基大利" },
+            { id: 241, text: "約哈難", pair: "加利亞" },
+            { id: 242, text: "加利亞", pair: "約哈難" },
+            { id: 243, text: "所羅巴伯", pair: "約書亞" },
+            { id: 244, text: "約書亞", pair: "所羅巴伯" },
+            { id: 245, text: "達太烏", pair: "古列" },
+            { id: 246, text: "古列", pair: "達太烏" },
+            { id: 247, text: "薛西斯", pair: "以斯帖" },
+            { id: 248, text: "以斯帖", pair: "薛西斯" },
+            { id: 249, text: "哈曼", pair: "末底改" },
+            { id: 250, text: "末底改", pair: "哈曼" },
+            { id: 251, text: "瓦實提", pair: "以斯帖" },
+            { id: 252, text: "以斯帖", pair: "瓦實提" },
+            { id: 253, text: "參巴拉", pair: "尼希米" },
+            { id: 254, text: "尼希米", pair: "參巴拉" },
+            { id: 255, text: "多比雅", pair: "尼希米" },
+            { id: 256, text: "尼希米", pair: "多比雅" },
+            { id: 257, text: "基善", pair: "尼希米" },
+            { id: 258, text: "尼希米", pair: "基善" },
+            { id: 259, text: "示瑪雅", pair: "尼希米" },
+            { id: 260, text: "尼希米", pair: "示瑪雅" },
+            { id: 261, text: "以利亞實", pair: "尼希米" },
+            { id: 262, text: "尼希米", pair: "以利亞實" },
+            { id: 263, text: "約雅大", pair: "以利亞實" },
+            { id: 264, text: "以利亞實", pair: "約雅大" },
+            { id: 265, text: "約哈難", pair: "以利亞實" },
+            { id: 266, text: "以利亞實", pair: "約哈難" },
+            { id: 267, text: "雅杜亞", pair: "約哈難" },
+            { id: 268, text: "約哈難", pair: "雅杜亞" },
+            { id: 269, text: "何西阿", pair: "歌篾" },
+            { id: 270, text: "歌篾", pair: "何西阿" },
+            { id: 271, text: "約珥", pair: "毗土珥" },
+            { id: 272, text: "毗土珥", pair: "約珥" },
+            { id: 273, text: "阿摩司", pair: "亞瑪謝" },
+            { id: 274, text: "亞瑪謝", pair: "阿摩司" },
+            { id: 275, text: "俄巴底", pair: "以東" },
+            { id: 276, text: "以東", pair: "俄巴底" },
+            { id: 277, text: "約拿", pair: "亞米太" },
+            { id: 278, text: "亞米太", pair: "約拿" },
+            { id: 279, text: "彌迦", pair: "摩利沙" },
+            { id: 280, text: "摩利沙", pair: "彌迦" },
+            { id: 281, text: "那鴻", pair: "伊勒歌斯" },
+            { id: 282, text: "伊勒歌斯", pair: "那鴻" },
+            { id: 283, text: "哈巴谷", pair: "迦勒底人" },
+            { id: 284, text: "迦勒底人", pair: "哈巴谷" },
+            { id: 285, text: "西番雅", pair: "古示" },
+            { id: 286, text: "古示", pair: "西番雅" },
+            { id: 287, text: "哈該", pair: "所羅巴伯" },
+            { id: 288, text: "所羅巴伯", pair: "哈該" },
+            { id: 289, text: "撒迦利亞", pair: "易多" },
+            { id: 290, text: "易多", pair: "撒迦利亞" },
+            { id: 291, text: "瑪拉基", pair: "以色列" },
+            { id: 292, text: "以色列", pair: "瑪拉基" },
+            { id: 293, text: "馬太", pair: "亞勒腓" },
+            { id: 294, text: "亞勒腓", pair: "馬太" },
+            { id: 295, text: "馬可", pair: "巴拿巴" },
+            { id: 296, text: "巴拿巴", pair: "馬可" },
+            { id: 297, text: "路加", pair: "提阿非羅" },
+            { id: 298, text: "提阿非羅", pair: "路加" },
+            { id: 299, text: "約翰", pair: "西庇太" },
+            { id: 300, text: "西庇太", pair: "約翰" },
+            { id: 301, text: "雅各", pair: "西庇太" },
+            { id: 302, text: "西庇太", pair: "雅各" },
+            { id: 303, text: "彼得", pair: "約拿" },
+            { id: 304, text: "約拿", pair: "彼得" },
+            { id: 305, text: "安得烈", pair: "約拿" },
+            { id: 306, text: "約拿", pair: "安得烈" },
+            { id: 307, text: "腓力", pair: "伯賽大" },
+            { id: 308, text: "伯賽大", pair: "腓力" },
+            { id: 309, text: "巴多羅買", pair: "拿但業" },
+            { id: 310, text: "拿但業", pair: "巴多羅買" },
+            { id: 311, text: "多馬", pair: "低土馬" },
+            { id: 312, text: "低土馬", pair: "多馬" },
+            { id: 313, text: "雅各", pair: "亞勒腓" },
+            { id: 314, text: "亞勒腓", pair: "雅各" },
+            { id: 315, text: "西門", pair: "奮銳黨" },
+            { id: 316, text: "奮銳黨", pair: "西門" },
+            { id: 317, text: "猶大", pair: "雅各" },
+            { id: 318, text: "雅各", pair: "猶大" },
+            { id: 319, text: "猶大", pair: "加略" },
+            { id: 320, text: "加略", pair: "猶大" },
+            { id: 321, text: "馬提亞", pair: "猶大" },
+            { id: 322, text: "猶大", pair: "馬提亞" },
+            { id: 323, text: "司提反", pair: "執事" },
+            { id: 324, text: "執事", pair: "司提反" },
+            { id: 325, text: "腓利", pair: "執事" },
+            { id: 326, text: "執事", pair: "腓利" },
+            { id: 327, text: "伯羅哥羅", pair: "執事" },
+            { id: 328, text: "執事", pair: "伯羅哥羅" },
+            { id: 329, text: "尼迦挪", pair: "執事" },
+            { id: 330, text: "執事", pair: "尼迦挪" }
+        ];
+
+        // 專家級別 - 人物與人物配對 (完整256對)
+        const hardCharacterPairs = [
+            ...mediumCharacterPairs,
+            { id: 331, text: "提門", pair: "執事" },
+            { id: 332, text: "執事", pair: "提門" },
+            { id: 333, text: "巴米拿", pair: "執事" },
+            { id: 334, text: "執事", pair: "巴米拿" },
+            { id: 335, text: "尼哥拉", pair: "執事" },
+            { id: 336, text: "執事", pair: "尼哥拉" },
+            { id: 337, text: "掃羅", pair: "大數" },
+            { id: 338, text: "大數", pair: "掃羅" },
+            { id: 339, text: "保羅", pair: "大數" },
+            { id: 340, text: "大數", pair: "保羅" },
+            { id: 341, text: "迦瑪列", pair: "保羅" },
+            { id: 342, text: "保羅", pair: "迦瑪列" },
+            { id: 343, text: "亞拿尼亞", pair: "大馬士革" },
+            { id: 344, text: "大馬士革", pair: "亞拿尼亞" },
+            { id: 345, text: "巴拿巴", pair: "約瑟" },
+            { id: 346, text: "約瑟", pair: "巴拿巴" },
+            { id: 347, text: "馬可", pair: "約翰" },
+            { id: 348, text: "約翰", pair: "馬可" },
+            { id: 349, text: "呂底亞", pair: "腓立比" },
+            { id: 350, text: "腓立比", pair: "呂底亞" },
+            { id: 351, text: "西拉", pair: "西拉斯" },
+            { id: 352, text: "西拉斯", pair: "西拉" },
+            { id: 353, text: "提摩太", pair: "路司得" },
+            { id: 354, text: "路司得", pair: "提摩太" },
+            { id: 355, text: "友尼基", pair: "提摩太" },
+            { id: 356, text: "提摩太", pair: "友尼基" },
+            { id: 357, text: "羅以", pair: "提摩太" },
+            { id: 358, text: "提摩太", pair: "羅以" },
+            { id: 359, text: "亞波羅", pair: "亞歷山大" },
+            { id: 360, text: "亞歷山大", pair: "亞波羅" },
+            { id: 361, text: "亞居拉", pair: "本都" },
+            { id: 362, text: "本都", pair: "亞居拉" },
+            { id: 363, text: "百基拉", pair: "亞居拉" },
+            { id: 364, text: "亞居拉", pair: "百基拉" },
+            { id: 365, text: "以拉都", pair: "哥林多" },
+            { id: 366, text: "哥林多", pair: "以拉都" },
+            { id: 367, text: "該猶", pair: "哥林多" },
+            { id: 368, text: "哥林多", pair: "該猶" },
+            { id: 369, text: "司提反", pair: "哥林多" },
+            { id: 370, text: "哥林多", pair: "司提反" },
+            { id: 371, text: "克里斯布", pair: "哥林多" },
+            { id: 372, text: "哥林多", pair: "克里斯布" },
+            { id: 373, text: "所西尼", pair: "哥林多" },
+            { id: 374, text: "哥林多", pair: "所西尼" },
+            { id: 375, text: "推基古", pair: "以弗所" },
+            { id: 376, text: "以弗所", pair: "推基古" },
+            { id: 377, text: "特羅非摩", pair: "以弗所" },
+            { id: 378, text: "以弗所", pair: "特羅非摩" },
+            { id: 379, text: "阿尼西母", pair: "歌羅西" },
+            { id: 380, text: "歌羅西", pair: "阿尼西母" },
+            { id: 381, text: "腓利門", pair: "歌羅西" },
+            { id: 382, text: "歌羅西", pair: "腓利門" },
+            { id: 383, text: "亞腓亞", pair: "腓利門" },
+            { id: 384, text: "腓利門", pair: "亞腓亞" },
+            { id: 385, text: "亞基布", pair: "腓利門" },
+            { id: 386, text: "腓利門", pair: "亞基布" },
+            { id: 387, text: "以巴弗", pair: "歌羅西" },
+            { id: 388, text: "歌羅西", pair: "以巴弗" },
+            { id: 389, text: "馬可", pair: "巴拿巴" },
+            { id: 390, text: "巴拿巴", pair: "馬可" },
+            { id: 391, text: "亞里達古", pair: "帖撒羅尼迦" },
+            { id: 392, text: "帖撒羅尼迦", pair: "亞里達古" },
+            { id: 393, text: "西公都", pair: "帖撒羅尼迦" },
+            { id: 394, text: "帖撒羅尼迦", pair: "西公都" },
+            { id: 395, text: "該猶", pair: "特庇" },
+            { id: 396, text: "特庇", pair: "該猶" },
+            { id: 397, text: "提摩太", pair: "特庇" },
+            { id: 398, text: "特庇", pair: "提摩太" },
+            { id: 399, text: "所巴特", pair: "庇哩亞" },
+            { id: 400, text: "庇哩亞", pair: "所巴特" },
+            { id: 401, text: "路加", pair: "醫生" },
+            { id: 402, text: "醫生", pair: "路加" },
+            { id: 403, text: "底馬", pair: "保羅" },
+            { id: 404, text: "保羅", pair: "底馬" },
+            { id: 405, text: "革勒士", pair: "保羅" },
+            { id: 406, text: "保羅", pair: "革勒士" },
+            { id: 407, text: "馬可", pair: "彼得" },
+            { id: 408, text: "彼得", pair: "馬可" },
+            { id: 409, text: "西拉", pair: "彼得" },
+            { id: 410, text: "彼得", pair: "西拉" },
+            { id: 411, text: "雅各", pair: "耶路撒冷" },
+            { id: 412, text: "耶路撒冷", pair: "雅各" },
+            { id: 413, text: "猶大", pair: "雅各書" },
+            { id: 414, text: "雅各書", pair: "猶大" },
+            { id: 415, text: "約翰", pair: "拔摩島" },
+            { id: 416, text: "拔摩島", pair: "約翰" },
+            { id: 417, text: "安提帕", pair: "別迦摩" },
+            { id: 418, text: "別迦摩", pair: "安提帕" },
+            { id: 419, text: "耶洗別", pair: "推雅推喇" },
+            { id: 420, text: "推雅推喇", pair: "耶洗別" },
+            { id: 421, text: "老底嘉", pair: "溫水" },
+            { id: 422, text: "溫水", pair: "老底嘉" },
+            { id: 423, text: "非拉鐵非", pair: "愛心" },
+            { id: 424, text: "愛心", pair: "非拉鐵非" },
+            { id: 425, text: "撒狄", pair: "死的" },
+            { id: 426, text: "死的", pair: "撒狄" },
+            { id: 427, text: "士每拿", pair: "受苦" },
+            { id: 428, text: "受苦", pair: "士每拿" },
+            { id: 429, text: "以弗所", pair: "失去愛心" },
+            { id: 430, text: "失去愛心", pair: "以弗所" },
+            { id: 431, text: "該隱", pair: "流浪者" },
+            { id: 432, text: "流浪者", pair: "該隱" },
+            { id: 433, text: "以諾", pair: "被提" },
+            { id: 434, text: "被提", pair: "以諾" },
+            { id: 435, text: "瑪土撒拉", pair: "長壽" },
+            { id: 436, text: "長壽", pair: "瑪土撒拉" },
+            { id: 437, text: "拉麥", pair: "復仇" },
+            { id: 438, text: "復仇", pair: "拉麥" },
+            { id: 439, text: "含", pair: "迦南" },
+            { id: 440, text: "迦南", pair: "含" },
+            { id: 441, text: "雅弗", pair: "外邦人" },
+            { id: 442, text: "外邦人", pair: "雅弗" },
+            { id: 443, text: "寧錄", pair: "巴別塔" },
+            { id: 444, text: "巴別塔", pair: "寧錄" },
+            { id: 445, text: "他拉", pair: "亞伯拉罕" },
+            { id: 446, text: "亞伯拉罕", pair: "他拉" },
+            { id: 447, text: "拿鶴", pair: "亞伯拉罕" },
+            { id: 448, text: "亞伯拉罕", pair: "拿鶴" },
+            { id: 449, text: "哈蘭", pair: "亞伯拉罕" },
+            { id: 450, text: "亞伯拉罕", pair: "哈蘭" },
+            { id: 451, text: "密迦", pair: "拿鶴" },
+            { id: 452, text: "拿鶴", pair: "密迦" },
+            { id: 453, text: "以實瑪利", pair: "夏甲" },
+            { id: 454, text: "夏甲", pair: "以實瑪利" },
+            { id: 455, text: "基土拉", pair: "亞伯拉罕" },
+            { id: 456, text: "亞伯拉罕", pair: "基土拉" },
+            { id: 457, text: "彼土利", pair: "利百加" },
+            { id: 458, text: "利百加", pair: "彼土利" },
+            { id: 459, text: "拉班", pair: "利百加" },
+            { id: 460, text: "利百加", pair: "拉班" },
+            { id: 461, text: "以掃", pair: "以東" },
+            { id: 462, text: "以東", pair: "以掃" },
+            { id: 463, text: "雅各", pair: "以色列" },
+            { id: 464, text: "以色列", pair: "雅各" },
+            { id: 465, text: "流便", pair: "長子" },
+            { id: 466, text: "長子", pair: "流便" },
+            { id: 467, text: "西緬", pair: "利未" },
+            { id: 468, text: "利未", pair: "西緬" },
+            { id: 469, text: "猶大", pair: "獅子" },
+            { id: 470, text: "獅子", pair: "猶大" },
+            { id: 471, text: "但", pair: "蛇" },
+            { id: 472, text: "蛇", pair: "但" },
+            { id: 473, text: "拿弗他利", pair: "鹿" },
+            { id: 474, text: "鹿", pair: "拿弗他利" },
+            { id: 475, text: "迦得", pair: "軍隊" },
+            { id: 476, text: "軍隊", pair: "迦得" },
+            { id: 477, text: "亞設", pair: "豐富" },
+            { id: 478, text: "豐富", pair: "亞設" },
+            { id: 479, text: "以薩迦", pair: "驢" },
+            { id: 480, text: "驢", pair: "以薩迦" },
+            { id: 481, text: "西布倫", pair: "海港" },
+            { id: 482, text: "海港", pair: "西布倫" },
+            { id: 483, text: "約瑟", pair: "多結果子" },
+            { id: 484, text: "多結果子", pair: "約瑟" },
+            { id: 485, text: "便雅憫", pair: "狼" },
+            { id: 486, text: "狼", pair: "便雅憫" },
+            { id: 487, text: "瑪拿西", pair: "忘記" },
+            { id: 488, text: "忘記", pair: "瑪拿西" },
+            { id: 489, text: "以法蓮", pair: "昌盛" },
+            { id: 490, text: "昌盛", pair: "以法蓮" },
+            { id: 491, text: "亞斯納", pair: "約瑟" },
+            { id: 492, text: "約瑟", pair: "亞斯納" },
+            { id: 493, text: "波提乏", pair: "約瑟" },
+            { id: 494, text: "約瑟", pair: "波提乏" },
+            { id: 495, text: "波提乏拉", pair: "約瑟" },
+            { id: 496, text: "約瑟", pair: "波提乏拉" },
+            { id: 497, text: "收生婆", pair: "施弗拉" },
+            { id: 498, text: "施弗拉", pair: "收生婆" },
+            { id: 499, text: "收生婆", pair: "普阿" },
+            { id: 500, text: "普阿", pair: "收生婆" },
+            { id: 501, text: "約基別", pair: "摩西" },
+            { id: 502, text: "摩西", pair: "約基別" },
+            { id: 503, text: "暗蘭", pair: "摩西" },
+            { id: 504, text: "摩西", pair: "暗蘭" },
+            { id: 505, text: "法老女兒", pair: "摩西" },
+            { id: 506, text: "摩西", pair: "法老女兒" },
+            { id: 507, text: "革舜", pair: "摩西" },
+            { id: 508, text: "摩西", pair: "革舜" },
+            { id: 509, text: "以利以謝", pair: "摩西" },
+            { id: 510, text: "摩西", pair: "以利以謝" },
+            { id: 511, text: "可拉", pair: "叛亂" },
+            { id: 512, text: "叛亂", pair: "可拉" }
+        ];
+
+        // 初學者級別 - 人物與事件配對 (最熟悉的80對)
+        const easyEventPairs = [
+            { id: 1, text: "挪亞", pair: "建造方舟" },
+            { id: 2, text: "建造方舟", pair: "挪亞" },
+            { id: 3, text: "摩西", pair: "分開紅海" },
+            { id: 4, text: "分開紅海", pair: "摩西" },
+            { id: 5, text: "大衛", pair: "擊敗歌利亞" },
+            { id: 6, text: "擊敗歌利亞", pair: "大衛" },
+            { id: 7, text: "約拿", pair: "被大魚吞噬" },
+            { id: 8, text: "被大魚吞噬", pair: "約拿" },
+            { id: 9, text: "但以理", pair: "獅子坑中" },
+            { id: 10, text: "獅子坑中", pair: "但以理" },
+            { id: 11, text: "耶穌", pair: "復活升天" },
+            { id: 12, text: "復活升天", pair: "耶穌" },
+            { id: 13, text: "保羅", pair: "大馬士革路上" },
+            { id: 14, text: "大馬士革路上", pair: "保羅" },
+            { id: 15, text: "亞伯拉罕", pair: "獻以撒" },
+            { id: 16, text: "獻以撒", pair: "亞伯拉罕" },
+            { id: 17, text: "約書亞", pair: "攻陷耶利哥" },
+            { id: 18, text: "攻陷耶利哥", pair: "約書亞" },
+            { id: 19, text: "基甸", pair: "三百勇士" },
+            { id: 20, text: "三百勇士", pair: "基甸" },
+            { id: 21, text: "參孫", pair: "推倒神廟" },
+            { id: 22, text: "推倒神廟", pair: "參孫" },
+            { id: 23, text: "以利亞", pair: "火車火馬升天" },
+            { id: 24, text: "火車火馬升天", pair: "以利亞" },
+            { id: 25, text: "以斯帖", pair: "拯救猶太人" },
+            { id: 26, text: "拯救猶太人", pair: "以斯帖" },
+            { id: 27, text: "所羅門", pair: "建造聖殿" },
+            { id: 28, text: "建造聖殿", pair: "所羅門" },
+            { id: 29, text: "彼得", pair: "水上行走" },
+            { id: 30, text: "水上行走", pair: "彼得" },
+            { id: 31, text: "撒該", pair: "爬上桑樹" },
+            { id: 32, text: "爬上桑樹", pair: "撒該" },
+            { id: 33, text: "拉撒路", pair: "從死裡復活" },
+            { id: 34, text: "從死裡復活", pair: "拉撒路" },
+            { id: 35, text: "雅各", pair: "與天使摔跤" },
+            { id: 36, text: "與天使摔跤", pair: "雅各" },
+            { id: 37, text: "約瑟", pair: "解夢成為宰相" },
+            { id: 38, text: "解夢成為宰相", pair: "約瑟" },
+            { id: 39, text: "哈拿", pair: "獻子給神" },
+            { id: 40, text: "獻子給神", pair: "哈拿" },
+            { id: 41, text: "路得", pair: "跟隨婆婆" },
+            { id: 42, text: "跟隨婆婆", pair: "路得" },
+            { id: 43, text: "尼希米", pair: "重建城牆" },
+            { id: 44, text: "重建城牆", pair: "尼希米" },
+            { id: 45, text: "約伯", pair: "忍受試煉" },
+            { id: 46, text: "忍受試煉", pair: "約伯" },
+            { id: 47, text: "以西結", pair: "枯骨復生" },
+            { id: 48, text: "枯骨復生", pair: "以西結" },
+            { id: 49, text: "該隱", pair: "殺死亞伯" },
+            { id: 50, text: "殺死亞伯", pair: "該隱" },
+            { id: 51, text: "以諾", pair: "與神同行" },
+            { id: 52, text: "與神同行", pair: "以諾" },
+            { id: 53, text: "亞伯拉罕", pair: "離開吾珥" },
+            { id: 54, text: "離開吾珥", pair: "亞伯拉罕" },
+            { id: 55, text: "羅得", pair: "逃離所多瑪" },
+            { id: 56, text: "逃離所多瑪", pair: "羅得" },
+            { id: 57, text: "雅各", pair: "夢見天梯" },
+            { id: 58, text: "夢見天梯", pair: "雅各" },
+            { id: 59, text: "約瑟", pair: "被賣到埃及" },
+            { id: 60, text: "被賣到埃及", pair: "約瑟" },
+            { id: 61, text: "摩西", pair: "燃燒荊棘" },
+            { id: 62, text: "燃燒荊棘", pair: "摩西" },
+            { id: 63, text: "施洗約翰", pair: "為耶穌施洗" },
+            { id: 64, text: "為耶穌施洗", pair: "施洗約翰" },
+            { id: 65, text: "亞倫", pair: "杖變成蛇" },
+            { id: 66, text: "杖變成蛇", pair: "亞倫" },
+            { id: 67, text: "米利暗", pair: "唱勝利之歌" },
+            { id: 68, text: "唱勝利之歌", pair: "米利暗" },
+            { id: 69, text: "約書亞", pair: "日頭停住" },
+            { id: 70, text: "日頭停住", pair: "約書亞" },
+            { id: 71, text: "底波拉", pair: "預言勝利" },
+            { id: 72, text: "預言勝利", pair: "底波拉" },
+            { id: 73, text: "雅億", pair: "殺死西西拉" },
+            { id: 74, text: "殺死西西拉", pair: "雅億" },
+            { id: 75, text: "參孫", pair: "撕裂獅子" },
+            { id: 76, text: "撕裂獅子", pair: "參孫" },
+            { id: 77, text: "撒母耳", pair: "膏立掃羅" },
+            { id: 78, text: "膏立掃羅", pair: "撒母耳" },
+            { id: 79, text: "掃羅", pair: "被惡魔攪擾" },
+            { id: 80, text: "被惡魔攪擾", pair: "掃羅" },
+            { id: 81, text: "大衛", pair: "彈琴安慰掃羅" },
+            { id: 82, text: "彈琴安慰掃羅", pair: "大衛" },
+            { id: 83, text: "所羅門", pair: "審判兩婦人" },
+            { id: 84, text: "審判兩婦人", pair: "所羅門" },
+            { id: 85, text: "以利亞", pair: "迦密山鬥法" },
+            { id: 86, text: "迦密山鬥法", pair: "以利亞" },
+            { id: 87, text: "以利沙", pair: "使斧頭浮起" },
+            { id: 88, text: "使斧頭浮起", pair: "以利沙" },
+            { id: 89, text: "乃縵", pair: "在約旦河洗澡" },
+            { id: 90, text: "在約旦河洗澡", pair: "乃縵" },
+            { id: 91, text: "約拿單", pair: "蜂蜜事件" },
+            { id: 92, text: "蜂蜜事件", pair: "約拿單" },
+            { id: 93, text: "希西家", pair: "日晷倒退" },
+            { id: 94, text: "日晷倒退", pair: "希西家" },
+            { id: 95, text: "約西亞", pair: "發現律法書" },
+            { id: 96, text: "發現律法書", pair: "約西亞" },
+            { id: 97, text: "但以理", pair: "解釋夢境" },
+            { id: 98, text: "解釋夢境", pair: "但以理" },
+            { id: 99, text: "沙得拉", pair: "火窯中得救" },
+            { id: 100, text: "火窯中得救", pair: "沙得拉" },
+            { id: 101, text: "以斯拉", pair: "宣讀律法" },
+            { id: 102, text: "宣讀律法", pair: "以斯拉" },
+            { id: 103, text: "耶穌", pair: "變水為酒" },
+            { id: 104, text: "變水為酒", pair: "耶穌" },
+            { id: 105, text: "耶穌", pair: "五餅二魚" },
+            { id: 106, text: "五餅二魚", pair: "耶穌" },
+            { id: 107, text: "耶穌", pair: "登山變像" },
+            { id: 108, text: "登山變像", pair: "耶穌" },
+            { id: 109, text: "耶穌", pair: "潔淨聖殿" },
+            { id: 110, text: "潔淨聖殿", pair: "耶穌" },
+            { id: 111, text: "彼得", pair: "三次不認主" },
+            { id: 112, text: "三次不認主", pair: "彼得" },
+            { id: 113, text: "多馬", pair: "摸耶穌傷痕" },
+            { id: 114, text: "摸耶穌傷痕", pair: "多馬" },
+            { id: 115, text: "司提反", pair: "被石頭打死" },
+            { id: 116, text: "被石頭打死", pair: "司提反" },
+            { id: 117, text: "腓利", pair: "為太監施洗" },
+            { id: 118, text: "為太監施洗", pair: "腓利" },
+            { id: 119, text: "彼得", pair: "監獄中被救" },
+            { id: 120, text: "監獄中被救", pair: "彼得" },
+            { id: 121, text: "保羅", pair: "在雅典講道" },
+            { id: 122, text: "在雅典講道", pair: "保羅" },
+            { id: 123, text: "保羅", pair: "船難到馬耳他" },
+            { id: 124, text: "船難到馬耳他", pair: "保羅" },
+            { id: 125, text: "約翰", pair: "拔摩島異象" },
+            { id: 126, text: "拔摩島異象", pair: "約翰" },
+            { id: 127, text: "以撒", pair: "挖掘水井" },
+            { id: 128, text: "挖掘水井", pair: "以撒" },
+            { id: 129, text: "雅各", pair: "為拉結服事" },
+            { id: 130, text: "為拉結服事", pair: "雅各" },
+            { id: 131, text: "約瑟", pair: "被下在監裡" },
+            { id: 132, text: "被下在監裡", pair: "約瑟" },
+            { id: 133, text: "摩西", pair: "擊打磐石" },
+            { id: 134, text: "擊打磐石", pair: "摩西" },
+            { id: 135, text: "亞倫", pair: "發芽的杖" },
+            { id: 136, text: "發芽的杖", pair: "亞倫" },
+            { id: 137, text: "巴蘭", pair: "驢子說話" },
+            { id: 138, text: "驢子說話", pair: "巴蘭" },
+            { id: 139, text: "約書亞", pair: "立石為記" },
+            { id: 140, text: "立石為記", pair: "約書亞" },
+            { id: 141, text: "基甸", pair: "羊毛試驗" },
+            { id: 142, text: "羊毛試驗", pair: "基甸" },
+            { id: 143, text: "參孫", pair: "用驢腮骨殺人" },
+            { id: 144, text: "用驢腮骨殺人", pair: "參孫" },
+            { id: 145, text: "路得", pair: "拾取麥穗" },
+            { id: 146, text: "拾取麥穗", pair: "路得" },
+            { id: 147, text: "撒母耳", pair: "聽見神呼喚" },
+            { id: 148, text: "聽見神呼喚", pair: "撒母耳" },
+            { id: 149, text: "掃羅", pair: "尋找驢子" },
+            { id: 150, text: "尋找驢子", pair: "掃羅" },
+            { id: 151, text: "大衛", pair: "躲避掃羅" },
+            { id: 152, text: "躲避掃羅", pair: "大衛" },
+            { id: 153, text: "所羅門", pair: "求智慧" },
+            { id: 154, text: "求智慧", pair: "所羅門" },
+            { id: 155, text: "以利亞", pair: "求死" },
+            { id: 156, text: "求死", pair: "以利亞" },
+            { id: 157, text: "以利沙", pair: "治好水源" },
+            { id: 158, text: "治好水源", pair: "以利沙" },
+            { id: 159, text: "約拿", pair: "逃避神" },
+            { id: 160, text: "逃避神", pair: "約拿" }
+        ];
+
+        // 進階級別 - 人物與事件配對 (中等難度170對)
+        const mediumEventPairs = [
+            ...easyEventPairs,
+            { id: 161, text: "希西家", pair: "生病禱告" },
+            { id: 162, text: "生病禱告", pair: "希西家" },
+            { id: 163, text: "約西亞", pair: "除掉偶像" },
+            { id: 164, text: "除掉偶像", pair: "約西亞" },
+            { id: 165, text: "耶利米", pair: "被下在淤泥中" },
+            { id: 166, text: "被下在淤泥中", pair: "耶利米" },
+            { id: 167, text: "以西結", pair: "吃書卷" },
+            { id: 168, text: "吃書卷", pair: "以西結" },
+            { id: 169, text: "但以理", pair: "不拜金像" },
+            { id: 170, text: "不拜金像", pair: "但以理" },
+            { id: 171, text: "何西阿", pair: "娶淫婦為妻" },
+            { id: 172, text: "娶淫婦為妻", pair: "何西阿" },
+            { id: 173, text: "約珥", pair: "預言蝗災" },
+            { id: 174, text: "預言蝗災", pair: "約珥" },
+            { id: 175, text: "阿摩司", pair: "牧人先知" },
+            { id: 176, text: "牧人先知", pair: "阿摩司" },
+            { id: 177, text: "俄巴底", pair: "預言以東" },
+            { id: 178, text: "預言以東", pair: "俄巴底" },
+            { id: 179, text: "彌迦", pair: "預言伯利恆" },
+            { id: 180, text: "預言伯利恆", pair: "彌迦" },
+            { id: 181, text: "那鴻", pair: "預言尼尼微" },
+            { id: 182, text: "預言尼尼微", pair: "那鴻" },
+            { id: 183, text: "哈巴谷", pair: "義人因信得生" },
+            { id: 184, text: "義人因信得生", pair: "哈巴谷" },
+            { id: 185, text: "西番雅", pair: "預言審判日" },
+            { id: 186, text: "預言審判日", pair: "西番雅" },
+            { id: 187, text: "哈該", pair: "重建聖殿" },
+            { id: 188, text: "重建聖殿", pair: "哈該" },
+            { id: 189, text: "撒迦利亞", pair: "八個異象" },
+            { id: 190, text: "八個異象", pair: "撒迦利亞" },
+            { id: 191, text: "瑪拉基", pair: "最後先知" },
+            { id: 192, text: "最後先知", pair: "瑪拉基" },
+            { id: 193, text: "馬利亞", pair: "天使報喜" },
+            { id: 194, text: "天使報喜", pair: "馬利亞" },
+            { id: 195, text: "約瑟", pair: "夢中指示" },
+            { id: 196, text: "夢中指示", pair: "約瑟" },
+            { id: 197, text: "牧羊人", pair: "天使報信" },
+            { id: 198, text: "天使報信", pair: "牧羊人" },
+            { id: 199, text: "西面", pair: "抱嬰孩耶穌" },
+            { id: 200, text: "抱嬰孩耶穌", pair: "西面" },
+            { id: 201, text: "博士", pair: "朝拜嬰孩" },
+            { id: 202, text: "朝拜嬰孩", pair: "博士" },
+            { id: 203, text: "希律", pair: "殺嬰孩" },
+            { id: 204, text: "殺嬰孩", pair: "希律" },
+            { id: 205, text: "耶穌", pair: "十二歲在聖殿" },
+            { id: 206, text: "十二歲在聖殿", pair: "耶穌" },
+            { id: 207, text: "耶穌", pair: "受魔鬼試探" },
+            { id: 208, text: "受魔鬼試探", pair: "耶穌" },
+            { id: 209, text: "耶穌", pair: "呼召門徒" },
+            { id: 210, text: "呼召門徒", pair: "耶穌" },
+            { id: 211, text: "耶穌", pair: "山上寶訓" },
+            { id: 212, text: "山上寶訓", pair: "耶穌" },
+            { id: 213, text: "耶穌", pair: "平靜風浪" },
+            { id: 214, text: "平靜風浪", pair: "耶穌" },
+            { id: 215, text: "耶穌", pair: "趕出污鬼" },
+            { id: 216, text: "趕出污鬼", pair: "耶穌" },
+            { id: 217, text: "耶穌", pair: "醫治瞎子" },
+            { id: 218, text: "醫治瞎子", pair: "耶穌" },
+            { id: 219, text: "耶穌", pair: "醫治癱子" },
+            { id: 220, text: "醫治癱子", pair: "耶穌" },
+            { id: 221, text: "耶穌", pair: "醫治血漏婦人" },
+            { id: 222, text: "醫治血漏婦人", pair: "耶穌" },
+            { id: 223, text: "耶穌", pair: "使睚魯女兒復活" },
+            { id: 224, text: "使睚魯女兒復活", pair: "耶穌" },
+            { id: 225, text: "耶穌", pair: "差遣七十人" },
+            { id: 226, text: "差遣七十人", pair: "耶穌" },
+            { id: 227, text: "耶穌", pair: "好撒瑪利亞人" },
+            { id: 228, text: "好撒瑪利亞人", pair: "耶穌" },
+            { id: 229, text: "耶穌", pair: "浪子回頭" },
+            { id: 230, text: "浪子回頭", pair: "耶穌" },
+            { id: 231, text: "耶穌", pair: "十個童女" },
+            { id: 232, text: "十個童女", pair: "耶穌" },
+            { id: 233, text: "耶穌", pair: "按手祝福小孩" },
+            { id: 234, text: "按手祝福小孩", pair: "耶穌" },
+            { id: 235, text: "耶穌", pair: "騎驢進耶路撒冷" },
+            { id: 236, text: "騎驢進耶路撒冷", pair: "耶穌" },
+            { id: 237, text: "耶穌", pair: "最後晚餐" },
+            { id: 238, text: "最後晚餐", pair: "耶穌" },
+            { id: 239, text: "耶穌", pair: "為門徒洗腳" },
+            { id: 240, text: "為門徒洗腳", pair: "耶穌" },
+            { id: 241, text: "耶穌", pair: "客西馬尼園禱告" },
+            { id: 242, text: "客西馬尼園禱告", pair: "耶穌" },
+            { id: 243, text: "猶大", pair: "親嘴賣主" },
+            { id: 244, text: "親嘴賣主", pair: "猶大" },
+            { id: 245, text: "彼得", pair: "削掉耳朵" },
+            { id: 246, text: "削掉耳朵", pair: "彼得" },
+            { id: 247, text: "耶穌", pair: "在十字架上" },
+            { id: 248, text: "在十字架上", pair: "耶穌" },
+            { id: 249, text: "約瑟", pair: "安葬耶穌" },
+            { id: 250, text: "安葬耶穌", pair: "約瑟" },
+            { id: 251, text: "馬利亞", pair: "看見復活主" },
+            { id: 252, text: "看見復活主", pair: "馬利亞" },
+            { id: 253, text: "門徒", pair: "以馬忤斯路上" },
+            { id: 254, text: "以馬忤斯路上", pair: "門徒" },
+            { id: 255, text: "門徒", pair: "五旬節聖靈降臨" },
+            { id: 256, text: "五旬節聖靈降臨", pair: "門徒" },
+            { id: 257, text: "彼得", pair: "醫治瘸腿的" },
+            { id: 258, text: "醫治瘸腿的", pair: "彼得" },
+            { id: 259, text: "亞拿尼亞", pair: "欺哄聖靈" },
+            { id: 260, text: "欺哄聖靈", pair: "亞拿尼亞" },
+            { id: 261, text: "撒非喇", pair: "欺哄聖靈" },
+            { id: 262, text: "欺哄聖靈", pair: "撒非喇" },
+            { id: 263, text: "司提反", pair: "行神蹟奇事" },
+            { id: 264, text: "行神蹟奇事", pair: "司提反" },
+            { id: 265, text: "腓利", pair: "撒瑪利亞傳道" },
+            { id: 266, text: "撒瑪利亞傳道", pair: "腓利" },
+            { id: 267, text: "西門", pair: "想買聖靈恩賜" },
+            { id: 268, text: "想買聖靈恩賜", pair: "西門" },
+            { id: 269, text: "埃提阿伯太監", pair: "受洗歸主" },
+            { id: 270, text: "受洗歸主", pair: "埃提阿伯太監" },
+            { id: 271, text: "掃羅", pair: "逼迫教會" },
+            { id: 272, text: "逼迫教會", pair: "掃羅" },
+            { id: 273, text: "亞拿尼亞", pair: "為掃羅按手" },
+            { id: 274, text: "為掃羅按手", pair: "亞拿尼亞" },
+            { id: 275, text: "彼得", pair: "使多加復活" },
+            { id: 276, text: "使多加復活", pair: "彼得" },
+            { id: 277, text: "哥尼流", pair: "見異象" },
+            { id: 278, text: "見異象", pair: "哥尼流" },
+            { id: 279, text: "彼得", pair: "見異象" },
+            { id: 280, text: "見異象", pair: "彼得" },
+            { id: 281, text: "希律", pair: "被蟲咬死" },
+            { id: 282, text: "被蟲咬死", pair: "希律" },
+            { id: 283, text: "保羅", pair: "第一次宣教" },
+            { id: 284, text: "第一次宣教", pair: "保羅" },
+            { id: 285, text: "以呂馬", pair: "被擊瞎眼" },
+            { id: 286, text: "被擊瞎眼", pair: "以呂馬" },
+            { id: 287, text: "保羅", pair: "在路司得被打" },
+            { id: 288, text: "在路司得被打", pair: "保羅" },
+            { id: 289, text: "保羅", pair: "耶路撒冷會議" },
+            { id: 290, text: "耶路撒冷會議", pair: "保羅" },
+            { id: 291, text: "保羅", pair: "第二次宣教" },
+            { id: 292, text: "第二次宣教", pair: "保羅" },
+            { id: 293, text: "保羅", pair: "馬其頓異象" },
+            { id: 294, text: "馬其頓異象", pair: "保羅" },
+            { id: 295, text: "保羅", pair: "腓立比監獄" },
+            { id: 296, text: "腓立比監獄", pair: "保羅" },
+            { id: 297, text: "保羅", pair: "帖撒羅尼迦騷動" },
+            { id: 298, text: "帖撒羅尼迦騷動", pair: "保羅" },
+            { id: 299, text: "保羅", pair: "庇哩亞查考聖經" },
+            { id: 300, text: "庇哩亞查考聖經", pair: "保羅" },
+            { id: 301, text: "保羅", pair: "雅典亞略巴古" },
+            { id: 302, text: "雅典亞略巴古", pair: "保羅" },
+            { id: 303, text: "保羅", pair: "哥林多十八個月" },
+            { id: 304, text: "哥林多十八個月", pair: "保羅" },
+            { id: 305, text: "保羅", pair: "第三次宣教" },
+            { id: 306, text: "第三次宣教", pair: "保羅" },
+            { id: 307, text: "保羅", pair: "以弗所三年" },
+            { id: 308, text: "以弗所三年", pair: "保羅" },
+            { id: 309, text: "底米丟", pair: "銀匠暴動" },
+            { id: 310, text: "銀匠暴動", pair: "底米丟" },
+            { id: 311, text: "猶推古", pair: "從樓上跌下" },
+            { id: 312, text: "從樓上跌下", pair: "猶推古" },
+            { id: 313, text: "保羅", pair: "米利都告別" },
+            { id: 314, text: "米利都告別", pair: "保羅" },
+            { id: 315, text: "亞迦布", pair: "預言保羅被捆" },
+            { id: 316, text: "預言保羅被捆", pair: "亞迦布" },
+            { id: 317, text: "保羅", pair: "耶路撒冷被捕" },
+            { id: 318, text: "耶路撒冷被捕", pair: "保羅" },
+            { id: 319, text: "保羅", pair: "在公會受審" },
+            { id: 320, text: "在公會受審", pair: "保羅" },
+            { id: 321, text: "保羅", pair: "四十人同謀" },
+            { id: 322, text: "四十人同謀", pair: "保羅" },
+            { id: 323, text: "保羅", pair: "腓力斯面前" },
+            { id: 324, text: "腓力斯面前", pair: "保羅" },
+            { id: 325, text: "保羅", pair: "非斯都面前" },
+            { id: 326, text: "非斯都面前", pair: "保羅" },
+            { id: 327, text: "保羅", pair: "亞基帕面前" },
+            { id: 328, text: "亞基帕面前", pair: "保羅" },
+            { id: 329, text: "保羅", pair: "上告該撒" },
+            { id: 330, text: "上告該撒", pair: "保羅" }
+        ];
+
+        // 專家級別 - 人物與事件配對 (完整256對)
+        const hardEventPairs = [
+            ...mediumEventPairs,
+            { id: 331, text: "保羅", pair: "往羅馬途中" },
+            { id: 332, text: "往羅馬途中", pair: "保羅" },
+            { id: 333, text: "保羅", pair: "在羅馬兩年" },
+            { id: 334, text: "在羅馬兩年", pair: "保羅" },
+            { id: 335, text: "亞當", pair: "被逐出伊甸園" },
+            { id: 336, text: "被逐出伊甸園", pair: "亞當" },
+            { id: 337, text: "夏娃", pair: "被蛇引誘" },
+            { id: 338, text: "被蛇引誘", pair: "夏娃" },
+            { id: 339, text: "該隱", pair: "獻祭不蒙悅納" },
+            { id: 340, text: "獻祭不蒙悅納", pair: "該隱" },
+            { id: 341, text: "亞伯", pair: "獻祭蒙悅納" },
+            { id: 342, text: "獻祭蒙悅納", pair: "亞伯" },
+            { id: 343, text: "以諾", pair: "不見死" },
+            { id: 344, text: "不見死", pair: "以諾" },
+            { id: 345, text: "挪亞", pair: "醉酒露體" },
+            { id: 346, text: "醉酒露體", pair: "挪亞" },
+            { id: 347, text: "含", pair: "看見父親赤身" },
+            { id: 348, text: "看見父親赤身", pair: "含" },
+            { id: 349, text: "閃", pair: "遮蓋父親" },
+            { id: 350, text: "遮蓋父親", pair: "閃" },
+            { id: 351, text: "雅弗", pair: "遮蓋父親" },
+            { id: 352, text: "遮蓋父親", pair: "雅弗" },
+            { id: 353, text: "寧錄", pair: "建造巴別塔" },
+            { id: 354, text: "建造巴別塔", pair: "寧錄" },
+            { id: 355, text: "亞伯拉罕", pair: "稱為神的朋友" },
+            { id: 356, text: "稱為神的朋友", pair: "亞伯拉罕" },
+            { id: 357, text: "亞伯拉罕", pair: "接待三位天使" },
+            { id: 358, text: "接待三位天使", pair: "亞伯拉罕" },
+            { id: 359, text: "亞伯拉罕", pair: "為所多瑪代求" },
+            { id: 360, text: "為所多瑪代求", pair: "亞伯拉罕" },
+            { id: 361, text: "羅得", pair: "接待天使" },
+            { id: 362, text: "接待天使", pair: "羅得" },
+            { id: 363, text: "羅得妻子", pair: "變成鹽柱" },
+            { id: 364, text: "變成鹽柱", pair: "羅得妻子" },
+            { id: 365, text: "夏甲", pair: "在曠野見天使" },
+            { id: 366, text: "在曠野見天使", pair: "夏甲" },
+            { id: 367, text: "以撒", pair: "在摩利亞山" },
+            { id: 368, text: "在摩利亞山", pair: "以撒" },
+            { id: 369, text: "利百加", pair: "在井旁遇見" },
+            { id: 370, text: "在井旁遇見", pair: "利百加" },
+            { id: 371, text: "以掃", pair: "為一碗紅豆湯" },
+            { id: 372, text: "為一碗紅豆湯", pair: "以掃" },
+            { id: 373, text: "雅各", pair: "騙取祝福" },
+            { id: 374, text: "騙取祝福", pair: "雅各" },
+            { id: 375, text: "雅各", pair: "在伯特利見異象" },
+            { id: 376, text: "在伯特利見異象", pair: "雅各" },
+            { id: 377, text: "雅各", pair: "在毗努伊勒" },
+            { id: 378, text: "在毗努伊勒", pair: "雅各" },
+            { id: 379, text: "約瑟", pair: "穿彩衣" },
+            { id: 380, text: "穿彩衣", pair: "約瑟" },
+            { id: 381, text: "約瑟", pair: "解酒政夢" },
+            { id: 382, text: "解酒政夢", pair: "約瑟" },
+            { id: 383, text: "約瑟", pair: "解膳長夢" },
+            { id: 384, text: "解膳長夢", pair: "約瑟" },
+            { id: 385, text: "約瑟", pair: "解法老夢" },
+            { id: 386, text: "解法老夢", pair: "約瑟" },
+            { id: 387, text: "約瑟", pair: "與兄弟相認" },
+            { id: 388, text: "與兄弟相認", pair: "約瑟" },
+            { id: 389, text: "雅各", pair: "下埃及" },
+            { id: 390, text: "下埃及", pair: "雅各" },
+            { id: 391, text: "雅各", pair: "為法老祝福" },
+            { id: 392, text: "為法老祝福", pair: "雅各" },
+            { id: 393, text: "雅各", pair: "為十二支派祝福" },
+            { id: 394, text: "為十二支派祝福", pair: "雅各" },
+            { id: 395, text: "摩西", pair: "被放在蒲草箱" },
+            { id: 396, text: "被放在蒲草箱", pair: "摩西" },
+            { id: 397, text: "摩西", pair: "殺死埃及人" },
+            { id: 398, text: "殺死埃及人", pair: "摩西" },
+            { id: 399, text: "摩西", pair: "逃到米甸" },
+            { id: 400, text: "逃到米甸", pair: "摩西" },
+            { id: 401, text: "摩西", pair: "在何烈山" },
+            { id: 402, text: "在何烈山", pair: "摩西" },
+            { id: 403, text: "摩西", pair: "十災" },
+            { id: 404, text: "十災", pair: "摩西" },
+            { id: 405, text: "摩西", pair: "逾越節" },
+            { id: 406, text: "逾越節", pair: "摩西" },
+            { id: 407, text: "摩西", pair: "在西奈山" },
+            { id: 408, text: "在西奈山", pair: "摩西" },
+            { id: 409, text: "摩西", pair: "打碎法版" },
+            { id: 410, text: "打碎法版", pair: "摩西" },
+            { id: 411, text: "摩西", pair: "面皮發光" },
+            { id: 412, text: "面皮發光", pair: "摩西" },
+            { id: 413, text: "摩西", pair: "不得進迦南" },
+            { id: 414, text: "不得進迦南", pair: "摩西" },
+            { id: 415, text: "摩西", pair: "在尼波山死" },
+            { id: 416, text: "在尼波山死", pair: "摩西" },
+            { id: 417, text: "亞倫", pair: "造金牛犢" },
+            { id: 418, text: "造金牛犢", pair: "亞倫" },
+            { id: 419, text: "亞倫", pair: "和米利暗毀謗摩西" },
+            { id: 420, text: "和米利暗毀謗摩西", pair: "亞倫" },
+            { id: 421, text: "米利暗", pair: "長大痲瘋" },
+            { id: 422, text: "長大痲瘋", pair: "米利暗" },
+            { id: 423, text: "可拉", pair: "地開口吞滅" },
+            { id: 424, text: "地開口吞滅", pair: "可拉" },
+            { id: 425, text: "巴蘭", pair: "被驢責備" },
+            { id: 426, text: "被驢責備", pair: "巴蘭" },
+            { id: 427, text: "約書亞", pair: "派探子" },
+            { id: 428, text: "派探子", pair: "約書亞" },
+            { id: 429, text: "約書亞", pair: "過約旦河" },
+            { id: 430, text: "過約旦河", pair: "約書亞" },
+            { id: 431, text: "約書亞", pair: "行割禮" },
+            { id: 432, text: "行割禮", pair: "約書亞" },
+            { id: 433, text: "約書亞", pair: "見耶和華軍隊元帥" },
+            { id: 434, text: "見耶和華軍隊元帥", pair: "約書亞" },
+            { id: 435, text: "約書亞", pair: "分地給各支派" },
+            { id: 436, text: "分地給各支派", pair: "約書亞" },
+            { id: 437, text: "喇合", pair: "隱藏探子" },
+            { id: 438, text: "隱藏探子", pair: "喇合" },
+            { id: 439, text: "亞干", pair: "取當滅之物" },
+            { id: 440, text: "取當滅之物", pair: "亞干" },
+            { id: 441, text: "基遍人", pair: "用詭計求和" },
+            { id: 442, text: "用詭計求和", pair: "基遍人" },
+            { id: 443, text: "俄陀聶", pair: "第一位士師" },
+            { id: 444, text: "第一位士師", pair: "俄陀聶" },
+            { id: 445, text: "以笏", pair: "刺殺伊磯倫" },
+            { id: 446, text: "刺殺伊磯倫", pair: "以笏" },
+            { id: 447, text: "珊迦", pair: "用牛棍殺六百人" },
+            { id: 448, text: "用牛棍殺六百人", pair: "珊迦" },
+            { id: 449, text: "底波拉", pair: "在棕樹下審判" },
+            { id: 450, text: "在棕樹下審判", pair: "底波拉" },
+            { id: 451, text: "巴拉", pair: "不敢單獨出戰" },
+            { id: 452, text: "不敢單獨出戰", pair: "巴拉" },
+            { id: 453, text: "雅億", pair: "用橛子殺西西拉" },
+            { id: 454, text: "用橛子殺西西拉", pair: "雅億" },
+            { id: 455, text: "基甸", pair: "拆毀巴力壇" },
+            { id: 456, text: "拆毀巴力壇", pair: "基甸" },
+            { id: 457, text: "基甸", pair: "被稱為耶路巴力" },
+            { id: 458, text: "被稱為耶路巴力", pair: "基甸" },
+            { id: 459, text: "基甸", pair: "挑選三百人" },
+            { id: 460, text: "挑選三百人", pair: "基甸" },
+            { id: 461, text: "基甸", pair: "用角和火把" },
+            { id: 462, text: "用角和火把", pair: "基甸" },
+            { id: 463, text: "亞比米勒", pair: "殺七十個兄弟" },
+            { id: 464, text: "殺七十個兄弟", pair: "亞比米勒" },
+            { id: 465, text: "約坦", pair: "樹木的比喻" },
+            { id: 466, text: "樹木的比喻", pair: "約坦" },
+            { id: 467, text: "亞比米勒", pair: "被婦人打死" },
+            { id: 468, text: "被婦人打死", pair: "亞比米勒" },
+            { id: 469, text: "耶弗他", pair: "許願獻女兒" },
+            { id: 470, text: "許願獻女兒", pair: "耶弗他" },
+            { id: 471, text: "參孫", pair: "拿細耳人" },
+            { id: 472, text: "拿細耳人", pair: "參孫" },
+            { id: 473, text: "參孫", pair: "娶非利士女子" },
+            { id: 474, text: "娶非利士女子", pair: "參孫" },
+            { id: 475, text: "參孫", pair: "用狐狸燒田" },
+            { id: 476, text: "用狐狸燒田", pair: "參孫" },
+            { id: 477, text: "參孫", pair: "搬走城門" },
+            { id: 478, text: "搬走城門", pair: "參孫" },
+            { id: 479, text: "參孫", pair: "被剃頭髮" },
+            { id: 480, text: "被剃頭髮", pair: "參孫" },
+            { id: 481, text: "參孫", pair: "眼睛被挖" },
+            { id: 482, text: "眼睛被挖", pair: "參孫" },
+            { id: 483, text: "路得", pair: "在田間拾穗" },
+            { id: 484, text: "在田間拾穗", pair: "路得" },
+            { id: 485, text: "路得", pair: "睡在波阿斯腳下" },
+            { id: 486, text: "睡在波阿斯腳下", pair: "路得" },
+            { id: 487, text: "波阿斯", pair: "贖回產業" },
+            { id: 488, text: "贖回產業", pair: "波阿斯" },
+            { id: 489, text: "哈拿", pair: "在聖殿哭泣" },
+            { id: 490, text: "在聖殿哭泣", pair: "哈拿" },
+            { id: 491, text: "哈拿", pair: "被以利誤會" },
+            { id: 492, text: "被以利誤會", pair: "哈拿" },
+            { id: 493, text: "撒母耳", pair: "幼年服事" },
+            { id: 494, text: "幼年服事", pair: "撒母耳" },
+            { id: 495, text: "撒母耳", pair: "夜間聽見呼聲" },
+            { id: 496, text: "夜間聽見呼聲", pair: "撒母耳" },
+            { id: 497, text: "以利", pair: "從椅上跌死" },
+            { id: 498, text: "從椅上跌死", pair: "以利" },
+            { id: 499, text: "非尼哈妻", pair: "生子取名以迦博" },
+            { id: 500, text: "生子取名以迦博", pair: "非尼哈妻" },
+            { id: 501, text: "約櫃", pair: "在非利士地" },
+            { id: 502, text: "在非利士地", pair: "約櫃" },
+            { id: 503, text: "大袞", pair: "仆倒在約櫃前" },
+            { id: 504, text: "仆倒在約櫃前", pair: "大袞" },
+            { id: 505, text: "伯示麥人", pair: "擅觀約櫃被擊殺" },
+            { id: 506, text: "擅觀約櫃被擊殺", pair: "伯示麥人" },
+            { id: 507, text: "撒母耳", pair: "在米斯巴聚集" },
+            { id: 508, text: "在米斯巴聚集", pair: "撒母耳" },
+            { id: 509, text: "掃羅", pair: "被膏為王" },
+            { id: 510, text: "被膏為王", pair: "掃羅" },
+            { id: 511, text: "掃羅", pair: "隱藏在器具中" },
+            { id: 512, text: "隱藏在器具中", pair: "掃羅" }
+        ];
+
+        let currentMode = 'character';
+        let currentDifficulty = 'easy';
+        let gameCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let startTime = null;
+        let timerInterval = null;
+
+        function selectMode(mode, element) {
+            currentMode = mode;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            element.classList.add('active');
+            
+            // 重新開始遊戲
+            initGame();
+        }
+
+        function selectDifficulty(difficulty, element) {
+            currentDifficulty = difficulty;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            element.classList.add('active');
+            
+            // 重新開始遊戲
+            initGame();
+        }
+
+        function getPairData() {
+            if (currentMode === 'character') {
+                switch (currentDifficulty) {
+                    case 'easy': return easyCharacterPairs;
+                    case 'medium': return mediumCharacterPairs;
+                    case 'hard': return hardCharacterPairs;
+                }
+            } else {
+                switch (currentDifficulty) {
+                    case 'easy': return easyEventPairs;
+                    case 'medium': return mediumEventPairs;
+                    case 'hard': return hardEventPairs;
+                }
+            }
+        }
+
+        function initGame() {
+            // 根據模式和難度選擇數據
+            const pairData = getPairData();
+            
+            // 將配對數據按對分組
+            const pairs = [];
+            for (let i = 0; i < pairData.length; i += 2) {
+                pairs.push([pairData[i], pairData[i + 1]]);
+            }
+            
+            // 隨機選擇8對完整的配對，確保沒有重複文字
+            const shuffledPairs = [...pairs].sort(() => Math.random() - 0.5);
+            const selectedPairs = [];
+            const usedTexts = new Set();
+            
+            for (const pair of shuffledPairs) {
+                // 檢查這一對的兩個文字是否都沒有被使用過
+                if (!usedTexts.has(pair[0].text) && !usedTexts.has(pair[1].text)) {
+                    selectedPairs.push(pair);
+                    usedTexts.add(pair[0].text);
+                    usedTexts.add(pair[1].text);
+                    
+                    // 找到8對就停止
+                    if (selectedPairs.length === 8) {
+                        break;
+                    }
+                }
+            }
+            
+            // 將選中的配對展開成16張卡片
+            gameCards = [];
+            selectedPairs.forEach(pair => {
+                gameCards.push(pair[0], pair[1]);
+            });
+            
+            // 打亂卡片順序
+            gameCards = gameCards.sort(() => Math.random() - 0.5);
+            
+            // 重置遊戲狀態
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            startTime = Date.now();
+            
+            // 更新顯示
+            updateDisplay();
+            createBoard();
+            startTimer();
+        }
+
+        function createBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            gameCards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.dataset.index = index;
+                
+                // 根據模式選擇圖標
+                const backIcon = currentMode === 'character' ? '👤' : '📖';
+                
+                cardElement.innerHTML = `
+                    <div class="card-back">${backIcon}</div>
+                    <div class="card-front">${card.text}</div>
+                `;
+                cardElement.addEventListener('click', () => flipCard(index));
+                board.appendChild(cardElement);
+            });
+        }
+
+        function flipCard(index) {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            
+            // 檢查是否可以翻牌
+            if (card.classList.contains('flipped') || 
+                card.classList.contains('matched') || 
+                flippedCards.length >= 2) {
+                return;
+            }
+            
+            // 翻牌
+            card.classList.add('flipped');
+            flippedCards.push(index);
+            
+            // 檢查配對
+            if (flippedCards.length === 2) {
+                moves++;
+                updateDisplay();
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        function checkMatch() {
+            const [index1, index2] = flippedCards;
+            const card1 = gameCards[index1];
+            const card2 = gameCards[index2];
+            const cardElement1 = document.querySelector(`[data-index="${index1}"]`);
+            const cardElement2 = document.querySelector(`[data-index="${index2}"]`);
+            
+            // 檢查是否配對成功
+            if (card1.pair === card2.text && card2.pair === card1.text) {
+                // 配對成功
+                cardElement1.classList.remove('flipped');
+                cardElement1.classList.add('matched');
+                cardElement2.classList.remove('flipped');
+                cardElement2.classList.add('matched');
+                matchedPairs++;
+                
+                // 檢查遊戲是否完成
+                if (matchedPairs === 8) {
+                    setTimeout(showVictory, 500);
+                }
+            } else {
+                // 配對失敗，翻回去
+                cardElement1.classList.remove('flipped');
+                cardElement2.classList.remove('flipped');
+            }
+            
+            flippedCards = [];
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('matches').textContent = `${matchedPairs}/8`;
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function showVictory() {
+            clearInterval(timerInterval);
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            
+            document.getElementById('finalTime').textContent = `${minutes}:${seconds}`;
+            document.getElementById('finalMoves').textContent = moves;
+            document.getElementById('victoryMessage').style.display = 'block';
+        }
+
+        function restartGame() {
+            document.getElementById('victoryMessage').style.display = 'none';
+            if (timerInterval) clearInterval(timerInterval);
+            initGame();
+        }
+
+        // 初始化遊戲
+        initGame();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98809e354083f1d4',t:'MTc1OTM3MDU1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
